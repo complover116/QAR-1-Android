@@ -18,9 +18,11 @@ public class DrawThread implements Runnable
 		sas.drawColor(Color.WHITE);
 		Paint p2 = new Paint();
 		p2.setColor(Color.BLACK);
-        //TODO DRAW CONTROLS
-
-
+        //DRAW CONTROLS
+        sas.drawRect(0,0,Render.leftBound,Render.height/2, p2);
+        sas.drawRect(Render.height/2,0,Render.leftBound,Render.height, p2);
+        sas.drawRect(0,Render.rightBound,Render.width,Render.height/2, p2);
+        sas.drawRect(Render.height/2,Render.rightBound,Render.width,Render.height, p2);
         //DRAW Q1 WORLD
         sas.save();
         sas.translate(Render.leftBound, 0);
