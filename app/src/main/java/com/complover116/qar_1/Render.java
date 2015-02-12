@@ -3,14 +3,11 @@
 package com.complover116.qar_1;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.TextView;
-import android.view.*;
-import android.view.KeyEvent.*;
 
 
 /**
@@ -78,8 +75,7 @@ class Render extends SurfaceView implements SurfaceHolder.Callback {
 		x = event.getX();
 		y = event.getY();
 		System.out.println(event.toString());
-			// TODO Auto-generated method stub
-			int key = 0;
+		int key = 0;
 		if(x>400&&x<800){
 			key = CharData.D;
 			if(y<400) key = CharData.W;

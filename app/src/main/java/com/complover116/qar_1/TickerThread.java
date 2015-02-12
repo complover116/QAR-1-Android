@@ -7,8 +7,8 @@ public class TickerThread implements Runnable {
 		try {
 			Thread.sleep(1000);
 		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			// SAY WHAT?
+			System.err.println("SAY WHAT?");
 		}
 		Map.init();
 		CurGame.lvl.loadMap(Map.map2);
@@ -22,8 +22,8 @@ public class TickerThread implements Runnable {
 				try {
 					Thread.sleep(20 - ttMillis);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+                    // SAY WHAT?
+                    System.err.println("SAY WHAT?");
 				}
 			}
 		}
