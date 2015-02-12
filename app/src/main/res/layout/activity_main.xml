@@ -5,22 +5,51 @@
     android:paddingTop="0dp"
     android:paddingBottom="0dp" tools:context=".Main">
 
-    <ImageView
+    <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/imageView"
-        android:src="@drawable/Logo_wide"
-        android:layout_alignBottom="@+id/button"
+        android:text="Play Alone"
+        android:id="@+id/alonebutton"
+        android:onClick="play"
+        android:layout_below="@+id/automatchbutton"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Play"
-        android:id="@+id/button"
-        android:onClick="play"
+        android:text="Automatch!"
+        android:id="@+id/automatchbutton"
+        android:onClick="startQuickGame"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Connect to G+"
+        android:id="@+id/connectbutton"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:onClick="signInClicked" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Disconnect from G+"
+        android:id="@+id/disconnectbutton"
+        android:layout_alignTop="@+id/connectbutton"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:clickable="false"
+        android:capitalize="none"
+        android:enabled="false"
+        android:onClick="signOutclicked" />
 
 </RelativeLayout>
