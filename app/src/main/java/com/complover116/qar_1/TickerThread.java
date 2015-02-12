@@ -11,7 +11,7 @@ public class TickerThread implements Runnable {
 			System.err.println("SAY WHAT?");
 		}
 		Map.init();
-		CurGame.lvl.loadMap(Map.map2);
+		CurGame.lvl.loadMap(Map.map1);
 		System.out.println("TickerThread has started...");
 		while(true) {
 			long tickstart = System.nanoTime();

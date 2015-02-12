@@ -7,6 +7,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -31,7 +32,7 @@ public class Main extends ActionBarActivity implements
     private boolean mResolvingConnectionFailure = false;
     private boolean mAutoStartSignInFlow = true;
     private boolean mSignInClicked = false;
-
+    private boolean mConnected = false;
     String mRoomId = null;
 
     @Override
@@ -62,7 +63,14 @@ public class Main extends ActionBarActivity implements
 
         return builder;
     }
+    private void engageMPScreen() {
+        setContentView(R.layout.engaging_multiplayer);
+    }
+    private void mainScreen() {
+        setContentView(R.layout.activity_main);
+    }
     public void startQuickGame(View view) {
+        engageMPScreen();
         // auto-match criteria to invite one random automatch opponent.
         // You can also specify more opponents (up to 3).
         Bundle am = RoomConfig.createAutoMatchCriteria(1, 1, 0);
@@ -139,6 +147,12 @@ public class Main extends ActionBarActivity implements
         findViewById(R.id.connectbutton).setEnabled(!connected);
         findViewById(R.id.disconnectbutton).setEnabled(connected);
         findViewById(R.id.automatchbutton).setEnabled(connected);
+        mConnected = connected;
+    }
+    public void updateConnectedState() {
+        findViewById(R.id.connectbutton).setEnabled(!mConnected);
+        findViewById(R.id.disconnectbutton).setEnabled(mConnected);
+        findViewById(R.id.automatchbutton).setEnabled(mConnected);
     }
     @Override
     public void onConnected(Bundle bundle) {
@@ -167,7 +181,21 @@ public class Main extends ActionBarActivity implements
                         requestCode, resultCode, R.string.signin_failure);
             }
         }
+        if (requestCode == RC_WAITING_ROOM) {
+            if (resultCode == RESULT_OK) {
+                startGame();
+            } else {
+                Toast.makeText(getApplicationContext(), "Cancelled!", Toast.LENGTH_LONG).show();
+                mainScreen();
+            }
+        }
     }
+
+    private void startGame() {
+        Toast.makeText(getApplicationContext(), "The game should start now!", Toast.LENGTH_LONG).show();
+        mainScreen();
+    }
+
     // Call when the sign-in button is clicked
     public void signInClicked(View view) {
         mSignInClicked = true;

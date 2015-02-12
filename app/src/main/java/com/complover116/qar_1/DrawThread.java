@@ -1,9 +1,14 @@
 package com.complover116.qar_1;
 
-import android.graphics.*;
-import android.view.*;
-import android.content.res.*;
-import java.util.*;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.view.SurfaceHolder;
+
+import java.util.HashMap;
 public class DrawThread implements Runnable
 {
 	public static SurfaceHolder surfaceholder;
@@ -13,6 +18,13 @@ public class DrawThread implements Runnable
 		sas.drawColor(Color.WHITE);
 		Paint p2 = new Paint();
 		p2.setColor(Color.BLACK);
+        //TODO DRAW CONTROLS
+
+
+        //DRAW Q1 WORLD
+        sas.save();
+        sas.translate(Render.leftBound, 0);
+        sas.scale(Render.canvaScale, Render.canvaScale);
 		//p2.setAlpha(40);
 		//RENDER PLATFORMS
 		//System.out.println(CurGame.lvl.platforms.size());
@@ -74,6 +86,7 @@ public class DrawThread implements Runnable
 			g2d.setFont(new Font("TimesRoman", Font.PLAIN, 30));
 			g2d.drawString("WARNING:No message from server for "+ClientThread.timeout/10+" seconds", 100, 500);
 		}*/
+        sas.restore();
 		surfaceholder.unlockCanvasAndPost(sas);
 	}
 	public void run() {

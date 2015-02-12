@@ -9,26 +9,18 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.TextView;
 
-
-/**
- * View that draws, takes keystrokes, etc. for a simple LunarLander game.
- *
- * Has a mode which RUNNING, PAUSED, etc. Has a x, y, dx, dy, ... capturing the
- * current ship physics. All x/y etc. are measured with (0,0) at the lower left.
- * updatePhysics() advances the physics based on realtime. draw() renders the
- * ship, and does an invalidate() to prompt another draw() as soon as possible
- * by the system.
- */
 class Render extends SurfaceView implements SurfaceHolder.Callback {
 
-    public static float x = 0;
-	public static float y = 0;
     /** Handle to the application context, used to e.g. fetch Drawables. */
     //private SurfaceV mContext;
 
     /** Pointer to the text view to display "Paused.." etc. */
     private TextView mStatusText;
-
+    public static int width = 0;
+    public static int height = 0;
+    public static int leftBound = 0;
+    public static int rightBound = 0;
+    public static float canvaScale = 0;
     public Render(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -48,9 +40,14 @@ class Render extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     /* Callback invoked when the surface dimensions change. */
-    public void surfaceChanged(SurfaceHolder holder, int format, int width,
-                               int height) {
-		System.out.println("Surface Changed "+width+":"+height);	   
+    public void surfaceChanged(SurfaceHolder holder, int format, int newwidth,
+                               int newheight) {
+		System.out.println("Surface Changed "+newwidth+":"+newheight);
+        width = newwidth;
+        height = newheight;
+        leftBound = (width - height)/2;
+        rightBound = (width - height)/2+height;
+        canvaScale = (float)height/(float)760;
     }
 
     /*
@@ -72,8 +69,8 @@ class Render extends SurfaceView implements SurfaceHolder.Callback {
     }
 	@Override
 	public boolean onTouchEvent(MotionEvent event){
-		x = event.getX();
-		y = event.getY();
+		float x = event.getX();
+		float y = event.getY();
 		System.out.println(event.toString());
 		int key = 0;
 		if(x>400&&x<800){

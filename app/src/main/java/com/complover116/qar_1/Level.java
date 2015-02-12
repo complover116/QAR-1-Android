@@ -32,6 +32,6 @@ public class Level {
 		//this.platforms.add(new Platform(new Rectangle(10, 10, 50, 50), 0));
 	}
 	public Level() {
-			loadMap(Map.map2);	
+			loadMap(Map.map1);
 	}
 }
