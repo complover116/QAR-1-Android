@@ -9,7 +9,4 @@
         android:id="@+id/lunar"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
-	<Button
-		android:id="@+id/leftbutton"
-		/>
 </RelativeLayout>
