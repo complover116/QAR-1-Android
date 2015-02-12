@@ -91,7 +91,7 @@ class Render extends SurfaceView implements SurfaceHolder.Callback {
 		if(x>1300) {key = CharData.Right;
 			if(y<400) key = CharData.Up;
 		}
-			
+			//TODO: Key Sending
 			/*if(!Loader.isServer){
 				ClientThread.sendKey(e.getKeyCode(), true);
 			}*/
