@@ -21,6 +21,10 @@ class Render extends SurfaceView implements SurfaceHolder.Callback {
     public static int leftBound = 0;
     public static int rightBound = 0;
     public static float canvaScale = 0;
+    public static Q1Button rightButton;
+    public static Q1Button leftButton;
+    public static Q1Button jumpButton;
+    public static Q1Button fireButton;
     public Render(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -48,6 +52,10 @@ class Render extends SurfaceView implements SurfaceHolder.Callback {
         leftBound = (width - height)/2;
         rightBound = (width - height)/2+height;
         canvaScale = (float)height/(float)760;
+        rightButton = new Q1Button("controls_right", new Rectangle(0,0,leftBound,height/2), CharData.Right);
+        leftButton = new Q1Button("controls_left", new Rectangle(0,height/2,leftBound,height/2), CharData.Left);
+        jumpButton = new Q1Button("controls_jump", new Rectangle(rightBound,0,width - rightBound,height/2), CharData.Up);
+        fireButton = new Q1Button("controls_fire", new Rectangle(rightBound,height/2,width - rightBound,height/2), CharData.Down);
     }
 
     /*
@@ -71,35 +79,23 @@ class Render extends SurfaceView implements SurfaceHolder.Callback {
 	public boolean onTouchEvent(MotionEvent event){
 		float x = event.getX();
 		float y = event.getY();
-		System.out.println(event.toString());
-		int key = 0;
-		if(x>400&&x<800){
-			key = CharData.D;
-			if(y<400) key = CharData.W;
-		}
-		if(x<400) {key = CharData.A;
-			if(y<400) key = CharData.S;
-		}
-		
-		if(x>800&&x<1300){
-			key = CharData.Left;
-			if(y<400) key = CharData.Down;
-		}
-		if(x>1300) {key = CharData.Right;
-			if(y<400) key = CharData.Up;
-		}
-			//TODO: Key Sending
-			/*if(!Loader.isServer){
-				ClientThread.sendKey(e.getKeyCode(), true);
-			}*/
-		if(event.getActionMasked()==event.ACTION_DOWN||event.getActionMasked()==event.ACTION_POINTER_DOWN){
-			for(int i = 0; i < CurGame.lvl.players.size(); i ++)
-				CurGame.lvl.players.get(i).keyPressed(key);
-		}
-		if(event.getAction()==event.ACTION_UP||event.getActionMasked()==event.ACTION_POINTER_UP){
-			for(int i = 0; i < CurGame.lvl.players.size(); i ++)
-				CurGame.lvl.players.get(i).keyReleased(key);
-		}
+
+		if(event.getActionMasked()==MotionEvent.ACTION_POINTER_DOWN||event.getActionMasked()==MotionEvent.ACTION_DOWN){
+           // System.out.println(event.toString());
+           // System.out.println(event.getActionIndex()+":"+event.getPointerId(event.getActionIndex()));
+            rightButton.checkPress(event,false);
+            leftButton.checkPress(event,false);
+            jumpButton.checkPress(event,false);
+            fireButton.checkPress(event,false);
+        }
+        if(event.getActionMasked()==MotionEvent.ACTION_POINTER_UP||event.getActionMasked()==MotionEvent.ACTION_UP){
+           // System.out.println(event.toString());
+           // System.out.println(event.getActionIndex()+":"+event.getPointerId(event.getActionIndex()));
+            rightButton.checkRelease(event,false);
+            leftButton.checkRelease(event,false);
+            jumpButton.checkRelease(event,false);
+            fireButton.checkRelease(event,false);
+        }
 		return true;
 	}
 	

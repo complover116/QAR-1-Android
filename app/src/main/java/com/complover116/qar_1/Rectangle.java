@@ -1,5 +1,9 @@
 package com.complover116.qar_1;
-import android.graphics.*;
+
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
 
 public class Rectangle
 {
@@ -20,11 +24,17 @@ public class Rectangle
 	public boolean intersects(Rectangle r){
 		Rect r1 = new Rect(x, y, x+width, y+height);
 		Rect r2 = new Rect(r.x, r.y, r.x+r.width, r.y+r.height);
-		//System.out.println(Rect.intersects(r1,r2));
 		return Rect.intersects(r1,r2);
 	}
 	public void draw(Canvas g2d, Paint p){
 		g2d.drawRect(x,y,x+width,y+height,p);
 		//System.out.println("Rectangle drawn");
 	}
+    public void drawOutline(Canvas g2d, Paint p){
+        g2d.drawRect(x,y,x+width,y+height,p);
+        Paint p2 = new Paint();
+        p2.setColor(Color.WHITE);
+        g2d.drawRect(x+5,y+5,x+width-5,y+height-5,p2);
+        //System.out.println("Rectangle drawn");
+    }
 }

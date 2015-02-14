@@ -1,8 +1,9 @@
 package com.complover116.qar_1;
 
+import android.graphics.Color;
+
 import java.io.Serializable;
 import java.nio.ByteBuffer;
-import android.graphics.*;
 
 public class Player implements Serializable {
 	/**
@@ -91,9 +92,9 @@ public class Player implements Serializable {
 					this.getHit();
 				}
 				if(CurGame.lvl.platforms.get(i).type == 1) {this.jumpsLeft = 2;
-				if(!this.onGround)
+				//if(!this.onGround)
 					//SoundHandler.playSound("/sound/effects/candj.wav");
-					
+
 					CurGame.lvl.TADs.add(new Particle(this.x+40-Math.random()*48,this.y+38-Math.random()*12,1, Color.rgb(0,255,0), 10));
 				}
 				if(!this.onGround)

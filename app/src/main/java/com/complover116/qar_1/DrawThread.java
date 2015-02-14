@@ -89,6 +89,10 @@ public class DrawThread implements Runnable
 			g2d.drawString("WARNING:No message from server for "+ClientThread.timeout/10+" seconds", 100, 500);
 		}*/
         sas.restore();
+        Render.rightButton.draw(sas);
+        Render.leftButton.draw(sas);
+        Render.jumpButton.draw(sas);
+        Render.fireButton.draw(sas);
 		surfaceholder.unlockCanvasAndPost(sas);
 	}
 	public void run() {
@@ -110,6 +114,14 @@ public class DrawThread implements Runnable
 		images.put("player2_left", BitmapFactory.decodeResource(resources, R.drawable.player2_left));
 		images.put("player3_left", BitmapFactory.decodeResource(resources, R.drawable.player3_left));
 		images.put("player4_left", BitmapFactory.decodeResource(resources, R.drawable.player4_left));
+        images.put("controls_right", BitmapFactory.decodeResource(resources, R.drawable.controls_right));
+        images.put("controls_right_on", BitmapFactory.decodeResource(resources, R.drawable.controls_right_on));
+        images.put("controls_left", BitmapFactory.decodeResource(resources, R.drawable.controls_left));
+        images.put("controls_left_on", BitmapFactory.decodeResource(resources, R.drawable.controls_left_on));
+        images.put("controls_jump", BitmapFactory.decodeResource(resources, R.drawable.controls_jump));
+        images.put("controls_jump_on", BitmapFactory.decodeResource(resources, R.drawable.controls_jump_on));
+        images.put("controls_fire", BitmapFactory.decodeResource(resources, R.drawable.controls_fire));
+        images.put("controls_fire_on", BitmapFactory.decodeResource(resources, R.drawable.controls_fire_on));
 		surfaceholder = surfhold;
 	}
 }
