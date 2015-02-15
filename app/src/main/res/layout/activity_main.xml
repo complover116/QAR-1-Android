@@ -11,11 +11,11 @@
         android:text="Play Alone"
         android:id="@+id/alonebutton"
         android:onClick="play"
-        android:layout_below="@+id/automatchbutton"
+        android:layout_below="@+id/createGameButton"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignRight="@+id/disconnectbutton"
+        android:layout_alignEnd="@+id/disconnectbutton" />
 
     <Button
         android:layout_width="wrap_content"
@@ -51,5 +51,17 @@
         android:capitalize="none"
         android:enabled="false"
         android:onClick="signOutclicked" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Create Game"
+        android:id="@+id/createGameButton"
+        android:layout_below="@+id/automatchbutton"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignRight="@+id/disconnectbutton"
+        android:layout_alignEnd="@+id/disconnectbutton"
+        android:onClick="createGame" />
 
 </RelativeLayout>

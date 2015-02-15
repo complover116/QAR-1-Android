@@ -17,5 +17,46 @@ public static final int Ast = 106;
 public static final int Num8 = 104;
 public static final int Num9 = 105;
 public static final int NumPlus = 107;
-
+public static int getTransformedButton(int initId) {
+    if(CurGame.color == 1) {
+        switch (initId) {
+            case Up:
+                return W;
+            case Down:
+                return S;
+            case Left:
+                return A;
+            case Right:
+                return D;
+        }
+    }
+    if(CurGame.color == 2) {
+        return initId;
+    }
+    if(CurGame.color == 3) {
+        switch (initId) {
+            case Up:
+                return U;
+            case Down:
+                return J;
+            case Left:
+                return H;
+            case Right:
+                return K;
+        }
+    }
+    if(CurGame.color == 4) {
+        switch (initId) {
+            case Up:
+                return Ast;
+            case Down:
+                return Num9;
+            case Left:
+                return Num8;
+            case Right:
+                return NumPlus;
+        }
+    }
+    return 228;
+}
 }

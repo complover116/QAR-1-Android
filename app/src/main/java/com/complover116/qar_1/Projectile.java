@@ -1,7 +1,12 @@
 package com.complover116.qar_1;
 
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+
+import com.google.android.gms.games.Games;
+
 import java.nio.ByteBuffer;
-import android.graphics.*;
 
 public class Projectile implements TAD {
 	public int skin;
@@ -21,16 +26,18 @@ public class Projectile implements TAD {
 		
 		this.skin = skin;
 		
-		byte out[] = new byte[256];
+		byte out[] = new byte[128];
 		out[0] = 2;
-		ByteBuffer data = ByteBuffer.wrap(out, 1, 255);
+		ByteBuffer data = ByteBuffer.wrap(out, 1, 127);
 		data.putDouble(x);
 		data.putDouble(y);
 		data.putDouble(velX);
 		data.putDouble(velY);
 		data.putInt(col);
 		data.put((byte)skin);
-		//ServerThread.sendBytes(out);
+        if(CurGame.isServer)
+        Games.RealTimeMultiplayer.sendUnreliableMessageToOthers(CurGame.mClass.mGoogleApiClient, out,
+                CurGame.mClass.mRoomId);
 	}
 	public Projectile(ByteBuffer data) {
 		this.x = data.getDouble();

@@ -1,5 +1,6 @@
 package com.complover116.qar_1;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -13,6 +14,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesStatusCodes;
+import com.google.android.gms.games.multiplayer.Invitation;
+import com.google.android.gms.games.multiplayer.Multiplayer;
 import com.google.android.gms.games.multiplayer.realtime.RealTimeMessage;
 import com.google.android.gms.games.multiplayer.realtime.RealTimeMessageReceivedListener;
 import com.google.android.gms.games.multiplayer.realtime.Room;
@@ -21,23 +24,29 @@ import com.google.android.gms.games.multiplayer.realtime.RoomStatusUpdateListene
 import com.google.android.gms.games.multiplayer.realtime.RoomUpdateListener;
 import com.google.example.games.basegameutils.BaseGameUtils;
 
+import java.nio.ByteBuffer;
+import java.text.Collator;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Main extends ActionBarActivity implements
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, RealTimeMessageReceivedListener, RoomUpdateListener, RoomStatusUpdateListener {
-    private GoogleApiClient mGoogleApiClient;
+    public GoogleApiClient mGoogleApiClient;
     private static int RC_SIGN_IN = 9001;
     final static int RC_WAITING_ROOM = 10002;
+    final static int RC_SELECT_PLAYERS = 10000;
     private boolean mResolvingConnectionFailure = false;
     private boolean mAutoStartSignInFlow = true;
     private boolean mSignInClicked = false;
     private boolean mConnected = false;
+    ArrayList<RemoteClient> clients = new ArrayList<RemoteClient>();
     String mRoomId = null;
-
+    Room room = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        CurGame.mClass = this;
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -58,7 +67,6 @@ public class Main extends ActionBarActivity implements
         RoomConfig.Builder builder = RoomConfig.builder(this);
         builder.setMessageReceivedListener(this);
         builder.setRoomStatusUpdateListener(this);
-
         // ...add other listeners as needed...
 
         return builder;
@@ -68,12 +76,18 @@ public class Main extends ActionBarActivity implements
     }
     private void mainScreen() {
         setContentView(R.layout.activity_main);
+        updateConnectedState();
+    }
+    public void createGame(View view) {
+        engageMPScreen();
+        Intent intent = Games.RealTimeMultiplayer.getSelectOpponentsIntent(mGoogleApiClient, 1, 3);
+        startActivityForResult(intent, RC_SELECT_PLAYERS);
     }
     public void startQuickGame(View view) {
         engageMPScreen();
         // auto-match criteria to invite one random automatch opponent.
         // You can also specify more opponents (up to 3).
-        Bundle am = RoomConfig.createAutoMatchCriteria(1, 1, 0);
+        Bundle am = RoomConfig.createAutoMatchCriteria(1, 3, 0);
 
         // build the room config:
         RoomConfig.Builder roomConfigBuilder = makeBasicRoomConfigBuilder();
@@ -88,7 +102,17 @@ public class Main extends ActionBarActivity implements
 
         // go to game screen
     }
-
+    public void sendKey(int key, boolean state) {
+        byte out[] = new byte[256];
+        if(state) {
+            out[0] = 100;
+        } else {
+            out[0] = 101;
+        }
+        ByteBuffer.wrap(out, 1, 255).putInt(key);
+        Games.RealTimeMultiplayer.sendUnreliableMessage(mGoogleApiClient, out,
+                mRoomId, CurGame.hostID);
+    }
     @Override
     protected void onStart() {
         super.onStart();
@@ -141,6 +165,7 @@ public class Main extends ActionBarActivity implements
 
     public void play(View view) {
         Intent intent = new Intent(this, Game.class);
+        new Thread(new TickerThread(this)).start();
         startActivity(intent);
     }
     public void switchConnectedState(boolean connected) {
@@ -155,8 +180,25 @@ public class Main extends ActionBarActivity implements
         findViewById(R.id.automatchbutton).setEnabled(mConnected);
     }
     @Override
-    public void onConnected(Bundle bundle) {
+    public void onConnected(Bundle connectionHint) {
         switchConnectedState(true);
+        if (connectionHint != null) {
+            Invitation inv =
+                    connectionHint.getParcelable(Multiplayer.EXTRA_INVITATION);
+
+            if (inv != null) {
+                // accept invitation
+                RoomConfig.Builder roomConfigBuilder = makeBasicRoomConfigBuilder();
+                roomConfigBuilder.setInvitationIdToAccept(inv.getInvitationId());
+                Games.RealTimeMultiplayer.join(mGoogleApiClient, roomConfigBuilder.build());
+
+                // prevent screen from sleeping during handshake
+                getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+                // go to game screen
+                engageMPScreen();
+            }
+        }
     }
 
     @Override
@@ -166,7 +208,7 @@ public class Main extends ActionBarActivity implements
     }
 
     protected void onActivityResult(int requestCode, int resultCode,
-                                    Intent intent) {
+                                    Intent data) {
         if (requestCode == RC_SIGN_IN) {
             mSignInClicked = false;
             mResolvingConnectionFailure = false;
@@ -189,11 +231,78 @@ public class Main extends ActionBarActivity implements
                 mainScreen();
             }
         }
+        if (requestCode == RC_SELECT_PLAYERS) {
+        if (resultCode != Activity.RESULT_OK) {
+            // user canceled
+            return;
+        }
+
+        // get the invitee list
+        Bundle extras = data.getExtras();
+        final ArrayList<String> invitees =
+                data.getStringArrayListExtra(Games.EXTRA_PLAYER_IDS);
+
+        // get auto-match criteria
+        Bundle autoMatchCriteria = null;
+        int minAutoMatchPlayers =
+                data.getIntExtra(Multiplayer.EXTRA_MIN_AUTOMATCH_PLAYERS, 0);
+        int maxAutoMatchPlayers =
+                data.getIntExtra(Multiplayer.EXTRA_MAX_AUTOMATCH_PLAYERS, 0);
+
+        if (minAutoMatchPlayers > 0) {
+            autoMatchCriteria = RoomConfig.createAutoMatchCriteria(
+                    minAutoMatchPlayers, maxAutoMatchPlayers, 0);
+        } else {
+            autoMatchCriteria = null;
+        }
+
+        // create the room and specify a variant if appropriate
+        RoomConfig.Builder roomConfigBuilder = makeBasicRoomConfigBuilder();
+        roomConfigBuilder.addPlayersToInvite(invitees);
+        if (autoMatchCriteria != null) {
+            roomConfigBuilder.setAutoMatchCriteria(autoMatchCriteria);
+        }
+        RoomConfig roomConfig = roomConfigBuilder.build();
+        Games.RealTimeMultiplayer.create(mGoogleApiClient, roomConfig);
+
+        // prevent screen from sleeping during handshake
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
     }
 
     private void startGame() {
-        Toast.makeText(getApplicationContext(), "The game should start now!", Toast.LENGTH_LONG).show();
-        mainScreen();
+
+        //DETERMINE THE HOST
+        ArrayList<String> ids = room.getParticipantIds();
+        java.util.Collections.sort(ids, Collator.getInstance());
+        CurGame.hostID = ids.get(0);
+        CurGame.color = 1;
+        for(String p:room.getParticipantIds()) {
+            if (room.getParticipantId(Games.Players.getCurrentPlayer(mGoogleApiClient).getPlayerId()) == p) {
+
+                break;
+            }
+            CurGame.color ++;
+        }
+        if(CurGame.hostID == room.getParticipantId(Games.Players.getCurrentPlayer(mGoogleApiClient).getPlayerId())) {
+            Toast.makeText(getApplicationContext(), "I get to be the host! Cool!", Toast.LENGTH_LONG).show();
+            CurGame.isServer = true;
+            new Thread(new TickerThread(this)).start();
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            setContentView(R.layout.activity_game);
+        } else {
+            Toast.makeText(getApplicationContext(), CurGame.hostID+" gets to be the host.", Toast.LENGTH_LONG).show();
+            CurGame.isServer = false;
+            new Thread(new TickerThread(this)).start();
+            byte out[] = new byte[32];
+            out[0] = 124;
+            Games.RealTimeMultiplayer.sendReliableMessage(mGoogleApiClient, null, out,
+                    mRoomId, CurGame.hostID);
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            setContentView(R.layout.activity_game);
+        }
     }
 
     // Call when the sign-in button is clicked
@@ -235,9 +344,59 @@ public class Main extends ActionBarActivity implements
 
     @Override
     public void onRealTimeMessageReceived(RealTimeMessage realTimeMessage) {
-
+        //Wat do?
+        byte in[] = realTimeMessage.getMessageData();
+        if(CurGame.isServer) {
+            //System.out.println(realTimeMessage.toString());
+            if (in[0] == 124) {
+                clients.add(new RemoteClient(realTimeMessage.getSenderParticipantId(),
+                        in[1]));
+            }
+            if (in[0] == 100) {
+                for (int i = 0; i < CurGame.lvl.players.size(); i++)
+                    CurGame.lvl.players.get(i).keyPressed(ByteBuffer.wrap(in, 1, 255).getInt());
+            }
+            if (in[0] == 101) {
+                for (int i = 0; i < CurGame.lvl.players.size(); i++)
+                    CurGame.lvl.players.get(i).keyReleased(ByteBuffer.wrap(in, 1, 255).getInt());
+            }
+        } else {
+            switch(in[0]) {
+                case 1:
+                    ByteBuffer data = ByteBuffer.wrap(in, 2, 30);
+                    CurGame.lvl.players.get(in[1]).update(data);
+                    break;
+                case 2:
+                    ByteBuffer data2 = ByteBuffer.wrap(in, 1, 127);
+                    //for(int i = 0; i < 256; i ++) System.out.print(in[i]+":");
+                    CurGame.lvl.TADs.add(new Projectile(data2));
+                    break;
+                case 3:
+                    switch(in[1]) {
+                        case 1:
+                            CurGame.lvl.loadMap(Map.map1);
+                            break;
+                        case 2:
+                            CurGame.lvl.loadMap(Map.map2);
+                            break;
+                    }
+                    break;
+            }
+        }
     }
-
+    public void sendData() {
+        for(byte i = 0; i < 4; i ++){
+            byte out[] = new byte[32];
+            out[0] = 1;
+            out[1] = i;
+            ByteBuffer data = ByteBuffer.wrap(out, 2, 30);
+            CurGame.lvl.players.get(i).downdate(data);
+            if(mGoogleApiClient.isConnected()) {
+                Games.RealTimeMultiplayer.sendUnreliableMessageToOthers(mGoogleApiClient, out,
+                        mRoomId);
+            }
+        }
+    }
     @Override
     public void onRoomCreated(int i, Room room) {
         if (i != GamesStatusCodes.STATUS_OK) {
@@ -249,6 +408,7 @@ public class Main extends ActionBarActivity implements
         // get waiting room intent
         Intent intent = Games.RealTimeMultiplayer.getWaitingRoomIntent(mGoogleApiClient, room, Integer.MAX_VALUE);
         startActivityForResult(intent, RC_WAITING_ROOM);
+        this.room = room;
     }
 
     @Override
@@ -256,6 +416,7 @@ public class Main extends ActionBarActivity implements
         // get waiting room intent
         Intent intent = Games.RealTimeMultiplayer.getWaitingRoomIntent(mGoogleApiClient, room, Integer.MAX_VALUE);
         startActivityForResult(intent, RC_WAITING_ROOM);
+        this.room = room;
     }
 
     @Override
@@ -265,57 +426,65 @@ public class Main extends ActionBarActivity implements
 
     @Override
     public void onRoomConnected(int i, Room room) {
-
+        this.room = room;
     }
 
     @Override
     public void onRoomConnecting(Room room) {
-
+        this.room = room;
     }
 
     @Override
     public void onRoomAutoMatching(Room room) {
-
+        this.room = room;
     }
 
     @Override
     public void onPeerInvitedToRoom(Room room, List<String> strings) {
-
+        this.room = room;
     }
 
     @Override
     public void onPeerDeclined(Room room, List<String> strings) {
-
+        this.room = room;
     }
 
     @Override
     public void onPeerJoined(Room room, List<String> strings) {
-
+        this.room = room;
     }
 
     @Override
     public void onPeerLeft(Room room, List<String> strings) {
-
+        this.room = room;
     }
 
     @Override
     public void onConnectedToRoom(Room room) {
         mRoomId = room.getRoomId();
+        this.room = room;
+
     }
 
     @Override
     public void onDisconnectedFromRoom(Room room) {
+        // leave the room
+        Games.RealTimeMultiplayer.leave(mGoogleApiClient, null, mRoomId);
 
+        // clear the flag that keeps the screen on
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        Toast.makeText(getApplicationContext(), "Connection error, leaving the room...", Toast.LENGTH_LONG).show();
     }
 
     @Override
     public void onPeersConnected(Room room, List<String> strings) {
-
+        this.room = room;
     }
 
     @Override
     public void onPeersDisconnected(Room room, List<String> strings) {
-
+        this.room = room;
     }
 
     @Override

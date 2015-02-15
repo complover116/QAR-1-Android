@@ -96,7 +96,7 @@ public class DrawThread implements Runnable
 		surfaceholder.unlockCanvasAndPost(sas);
 	}
 	public void run() {
-		new Thread(new TickerThread()).start();
+
 		//while(true){
 		//DRAW
 		//Canvas sas = surfaceholder.lockCanvas();

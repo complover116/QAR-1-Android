@@ -9,7 +9,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.TextView;
 
-class Render extends SurfaceView implements SurfaceHolder.Callback {
+public class Render extends SurfaceView implements SurfaceHolder.Callback {
 
     /** Handle to the application context, used to e.g. fetch Drawables. */
     //private SurfaceV mContext;
@@ -52,10 +52,10 @@ class Render extends SurfaceView implements SurfaceHolder.Callback {
         leftBound = (width - height)/2;
         rightBound = (width - height)/2+height;
         canvaScale = (float)height/(float)760;
-        rightButton = new Q1Button("controls_right", new Rectangle(0,0,leftBound,height/2), CharData.Right);
-        leftButton = new Q1Button("controls_left", new Rectangle(0,height/2,leftBound,height/2), CharData.Left);
-        jumpButton = new Q1Button("controls_jump", new Rectangle(rightBound,0,width - rightBound,height/2), CharData.Up);
-        fireButton = new Q1Button("controls_fire", new Rectangle(rightBound,height/2,width - rightBound,height/2), CharData.Down);
+        rightButton = new Q1Button("controls_right", new Rectangle(0,0,leftBound,height/2), CharData.getTransformedButton(CharData.Right));
+        leftButton = new Q1Button("controls_left", new Rectangle(0,height/2,leftBound,height/2), CharData.getTransformedButton(CharData.Left));
+        jumpButton = new Q1Button("controls_jump", new Rectangle(rightBound,0,width - rightBound,height/2), CharData.getTransformedButton(CharData.Up));
+        fireButton = new Q1Button("controls_fire", new Rectangle(rightBound,height/2,width - rightBound,height/2), CharData.getTransformedButton(CharData.Down));
     }
 
     /*
